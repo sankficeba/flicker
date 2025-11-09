@@ -57,7 +57,6 @@
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            height: 100%;
         }
 
         .product-card:hover {
@@ -77,6 +76,7 @@
             display: flex;
             flex-direction: column;
             flex: 1;
+            min-height: 0;
         }
 
         .product-name {
@@ -91,6 +91,7 @@
             font-size: 0.95em;
             margin-bottom: 15px;
             line-height: 1.5;
+            flex-shrink: 0;
         }
 
         .product-price {
@@ -98,6 +99,7 @@
             font-weight: bold;
             color: #667eea;
             margin-top: 10px;
+            flex-shrink: 0;
         }
 
         .price-label {
@@ -117,6 +119,7 @@
             transition: transform 0.2s ease;
             width: 100%;
             margin-top: auto;
+            flex-shrink: 0;
         }
 
         .btn:hover {
@@ -163,6 +166,66 @@
             {% endfor %}
         </div>
     </div>
+    <script>
+        // Выравнивание высоты карточек в одной строке
+        function alignCardHeights() {
+            const grid = document.querySelector('.products-grid');
+            if (!grid) return;
+            
+            const cards = Array.from(grid.querySelectorAll('.product-card'));
+            if (cards.length === 0) return;
+            
+            // Группируем карточки по строкам
+            const rows = [];
+            let currentRow = [];
+            let currentTop = null;
+            
+            cards.forEach((card, index) => {
+                const rect = card.getBoundingClientRect();
+                const cardTop = rect.top;
+                
+                if (currentTop === null || Math.abs(cardTop - currentTop) < 10) {
+                    // Та же строка
+                    currentRow.push(card);
+                    if (currentTop === null) currentTop = cardTop;
+                } else {
+                    // Новая строка
+                    if (currentRow.length > 0) {
+                        rows.push(currentRow);
+                    }
+                    currentRow = [card];
+                    currentTop = cardTop;
+                }
+            });
+            
+            // Добавляем последнюю строку
+            if (currentRow.length > 0) {
+                rows.push(currentRow);
+            }
+            
+            // Выравниваем высоту карточек в каждой строке
+            rows.forEach(row => {
+                let maxHeight = 0;
+                row.forEach(card => {
+                    card.style.height = 'auto';
+                    const height = card.offsetHeight;
+                    if (height > maxHeight) {
+                        maxHeight = height;
+                    }
+                });
+                row.forEach(card => {
+                    card.style.height = maxHeight + 'px';
+                });
+            });
+        }
+        
+        // Выполняем выравнивание при загрузке и изменении размера окна
+        window.addEventListener('load', alignCardHeights);
+        window.addEventListener('resize', alignCardHeights);
+        
+        // Также выполняем после небольшой задержки для учета динамического контента
+        setTimeout(alignCardHeights, 100);
+    </script>
 </body>
 </html>
 
